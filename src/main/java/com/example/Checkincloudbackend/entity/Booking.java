@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.Getter;
 
 import java.time.LocalDate;
 
@@ -18,6 +19,7 @@ public class Booking {
 
     @NotNull(message = "check in date is required")
     private LocalDate checkInDate;
+    @Getter
     @Future(message = "check out date must be in the future")
     private LocalDate checkOutDate;
     @Min(value = 1 , message = "Number of adults must not be less than 1 ")
@@ -33,6 +35,10 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id"  )
     private Room room;
+
+    public void setCheckOutDate(LocalDate checkOutDate) {
+        this.checkOutDate = checkOutDate;
+    }
 
     public void calculateTotalNumberOfGuest (){
         this.totalNumOfGuest= this.numOfAdults + this.numOfChildren ;
