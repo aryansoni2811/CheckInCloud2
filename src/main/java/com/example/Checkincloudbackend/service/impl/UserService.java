@@ -38,7 +38,7 @@ public class UserService implements IUserService {
             if(user.getRole() == null ||  user.getRole().isBlank()){
                 user.setRole("USER");
             }
-            if(userRepository.existByEmail(user.getEmail())){
+            if(userRepository.existsByEmail(user.getEmail())){
                 throw new OurException(user.getEmail()+ "already exist ");
             }
 

@@ -14,9 +14,10 @@ import com.example.Checkincloudbackend.service.interfac.IRoomService;
 import com.example.Checkincloudbackend.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class BookingService implements IBookingService {
 
     @Autowired
@@ -75,22 +76,22 @@ public class BookingService implements IBookingService {
 
     private boolean roomisAvailable(Booking bookingRequest, List<Booking> existingBooking) {
         return existingBooking.stream()
-                .noneMatch( existingBooking -> bookingRequest.getCheckInDate().equals(existingBooking.getCheckInDate())
-                        || bookingRequest.getCheckOutDate().isBefore(existingBooking.getCheckOutDate())
-                        || (bookingRequest.getCheckInDate().isAfter(existingBooking.getCheckInDate())
-                        && bookingRequest.getCheckInDate().isBefore(existingBooking.getCheckOutDate()))
-                        || (bookingRequest.getCheckInDate().isBefore(existingBooking.getCheckInDate())
-                        && bookingRequest.getCheckOutDate().equals(existingBooking.getCheckOutDate()))
-                        || (bookingRequest.getCheckInDate().isBefore (existingBooking.getCheckInDate())
-                        && bookingRequest.getCheckOutDate().isAfter (existingBooking.getCheckOutDate()))
-                        || (bookingRequest.getCheckInDate().equals(existingBooking.getCheckOutDate())
-                        && bookingRequest.getCheckOutDate().equals(existingBooking.getCheckInDate()))
-
-                        || (bookingRequest.getCheckInDate().equals(existingBooking.getCheckOutDate())
-                        && bookingRequest.getCheckOutDate().equals(bookingRequest.getCheckInDate()))
-        );
-
+                .noneMatch(booking ->
+                        bookingRequest.getCheckInDate().equals(booking.getCheckInDate())
+                                || bookingRequest.getCheckOutDate().isBefore(booking.getCheckOutDate())
+                                || (bookingRequest.getCheckInDate().isAfter(booking.getCheckInDate())
+                                && bookingRequest.getCheckInDate().isBefore(booking.getCheckOutDate()))
+                                || (bookingRequest.getCheckInDate().isBefore(booking.getCheckInDate())
+                                && bookingRequest.getCheckOutDate().equals(booking.getCheckOutDate()))
+                                || (bookingRequest.getCheckInDate().isBefore(booking.getCheckInDate())
+                                && bookingRequest.getCheckOutDate().isAfter(booking.getCheckOutDate()))
+                                || (bookingRequest.getCheckInDate().equals(booking.getCheckOutDate())
+                                && bookingRequest.getCheckOutDate().equals(booking.getCheckInDate()))
+                                || (bookingRequest.getCheckInDate().equals(booking.getCheckOutDate())
+                                && bookingRequest.getCheckOutDate().equals(bookingRequest.getCheckInDate()))
+                );
     }
+
 
     @Override
     public Response findBookingByConfirmationCode(String confirmationCode) {
@@ -98,7 +99,7 @@ public class BookingService implements IBookingService {
 
         try{
             Booking booking = bookingRepository.findByBookingConfirmationCode(confirmationCode).orElseThrow(()-> new OurException("booking not found"));
-            BookingDTO bookingDto= Utils.mapBookingEntityToBookingDTO(booking);
+            BookingDTO bookingDto= Utils.mapBookingEntityToBookingDTOPlusBookedRoom(booking , true);
 
 
             response.setStatusCode(200);

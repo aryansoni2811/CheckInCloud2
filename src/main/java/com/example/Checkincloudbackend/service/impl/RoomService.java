@@ -25,16 +25,12 @@ public class RoomService implements IRoomService {
     @Autowired
     private BookingRepository bookingRepository;
 
-
-
-
-
     @Override
-    public Response addNewRoom(MultipartFile photo, String roomType, BigDecimal roomPrice, String description) {
+    public Response addNewRoom(byte[] photo, String roomType, BigDecimal roomPrice, String description) {
         Response response = new Response();
-        try{
+        try {
             Room room = new Room();
-            //room.setRoomPhotoUrl();
+            room.setRoomPhoto(photo);
             room.setRoomType(roomType);
             room.setRoomPrice(roomPrice);
             room.setRoomDescription(description);
@@ -45,171 +41,139 @@ public class RoomService implements IRoomService {
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoom(roomDTO);
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while saving a room: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
     public Response getAllRooms() {
         Response response = new Response();
-        try{
-            List<Room> roomList = roomRepository.findAll(Sort.by(Sort.Direction.DESC , "id"));
+        try {
+            List<Room> roomList = roomRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
             List<RoomDTO> roomDtoList = Utils.mapRoomListEntityToRoomListDTO(roomList);
-
 
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoomList(roomDtoList);
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while fetching rooms: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
     public List<String> getAllRoomTypes() {
-        List<String> roomTypeList = roomRepository.findDistinctRoomTypes();
-        return roomTypeList;
+        return roomRepository.findDistinctRoomTypes();
     }
 
     @Override
     public Response deleteRoom(Long roomId) {
         Response response = new Response();
-        try{
+        try {
             roomRepository.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
             roomRepository.deleteById(roomId);
 
-
             response.setStatusCode(200);
             response.setMessage("successful");
-
-        }catch (OurException e){
+        } catch (OurException e) {
             response.setStatusCode(404);
             response.setMessage(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while deleting a room: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
-    public Response updateRoom(Long roomId,String description , String roomType, BigDecimal roomPrice, MultipartFile photo) {
+    public Response updateRoom(Long roomId, String description, String roomType, BigDecimal roomPrice, byte[] photo) {
         Response response = new Response();
-        try{
-           //String
-            if(photo != null && !photo.isEmpty()){
-                //
+        try {
+            Room room = roomRepository.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
+            if (photo != null) {
+                room.setRoomPhoto(photo);
             }
-            Room room = roomRepository.findById(roomId).orElseThrow(() -> new OurException("room not found"));
-            if(roomType != null){
+            if (roomType != null) {
                 room.setRoomType(roomType);
             }
-            if(description != null){
+            if (description != null) {
                 room.setRoomDescription(description);
             }
-            if(roomPrice != null){
+            if (roomPrice != null) {
                 room.setRoomPrice(roomPrice);
             }
 
             Room updatedRoom = roomRepository.save(room);
-            RoomDTO roomDTO= Utils.mapRoomEntityToRoomDTO(updatedRoom);
+            RoomDTO roomDTO = Utils.mapRoomEntityToRoomDTO(updatedRoom);
 
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoom(roomDTO);
-
-        }catch (OurException e){
+        } catch (OurException e) {
             response.setStatusCode(404);
             response.setMessage(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while updating a room: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
     public Response getRoomById(Long roomId) {
         Response response = new Response();
-        try{
+        try {
             Room room = roomRepository.findById(roomId).orElseThrow(() -> new OurException("Room not found"));
             RoomDTO roomDTO = Utils.mapRoomEntityToRoomDTOPlusBooking(room);
-
 
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoom(roomDTO);
-
-        }catch (OurException e){
+        } catch (OurException e) {
             response.setStatusCode(404);
             response.setMessage(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while fetching the room: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
     public Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkOutDate, String roomType) {
         Response response = new Response();
-        try{
-
-            List<Room> availableRooms = roomRepository.findAvailableRoomsByDatesAndTypes(checkInDate, checkOutDate ,roomType);
+        try {
+            List<Room> availableRooms = roomRepository.findAvailableRoomsByDatesAndTypes(checkInDate, checkOutDate, roomType);
             List<RoomDTO> roomDtoList = Utils.mapRoomListEntityToRoomListDTO(availableRooms);
-
 
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoomList(roomDtoList);
-
-        }catch (OurException e){
-            response.setStatusCode(404);
-            response.setMessage(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while fetching available rooms: " + e.getMessage());
         }
-
-
         return response;
     }
 
     @Override
     public Response getAllAvailableRooms() {
         Response response = new Response();
-        try{
+        try {
+            List<Room> roomList = roomRepository.getAllAvailableRooms();
+            List<RoomDTO> roomDtoList = Utils.mapRoomListEntityToRoomListDTO(roomList);
 
-           List<Room> roomList = roomRepository.getAllAvailableRooms();
-            List<RoomDTO> roomDtoList= Utils.mapRoomListEntityToRoomListDTO(roomList);
             response.setStatusCode(200);
             response.setMessage("successful");
             response.setRoomList(roomDtoList);
-
-        }catch (OurException e){
-            response.setStatusCode(404);
-            response.setMessage(e.getMessage());
-        }catch(Exception e){
+        } catch (Exception e) {
             response.setStatusCode(500);
-            response.setMessage("Error occur saving a room " +e.getMessage());
+            response.setMessage("Error occurred while fetching available rooms: " + e.getMessage());
         }
-
-
         return response;
     }
 }

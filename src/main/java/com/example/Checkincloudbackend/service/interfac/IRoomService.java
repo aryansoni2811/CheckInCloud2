@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface IRoomService {
-    Response addNewRoom(MultipartFile photo , String roomType , BigDecimal roomPrice , String description);
+    Response addNewRoom(byte[] photo, String roomType, BigDecimal roomPrice, String description);
 
     Response getAllRooms();
 
@@ -17,12 +17,11 @@ public interface IRoomService {
 
     Response deleteRoom(Long roomId);
 
-    Response updateRoom(Long roomId ,String description, String roomType , BigDecimal roomPrice , MultipartFile photo );
+    Response updateRoom(Long roomId, String description, String roomType, BigDecimal roomPrice, byte[] photo);
 
     Response getRoomById(Long roomId);
 
-    Response getAvailableRoomsByDateAndType(LocalDate checkInDate , LocalDate checkOutDate , String roomType);
+    Response getAvailableRoomsByDateAndType(LocalDate checkInDate, LocalDate checkOutDate, String roomType);
 
     Response getAllAvailableRooms();
-
 }
