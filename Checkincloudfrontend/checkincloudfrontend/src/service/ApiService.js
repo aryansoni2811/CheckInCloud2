@@ -1,8 +1,7 @@
-import axios from "axios"
+import axios from "axios";
 
 export default class ApiService {
-
-    static BASE_URL = "http://localhost:8081"
+    static BASE_URL = "http://localhost:8081";
 
     static getHeader() {
         const token = localStorage.getItem("token");
@@ -12,182 +11,276 @@ export default class ApiService {
         };
     }
 
-    /**AUTH */
+    /** AUTH */
 
-    /* This  register a new user */
+    /* Register a new user */
     static async registerUser(registration) {
-        const response = await axios.post(`${this.BASE_URL}/auth/register`, registration)
-        return response.data
+        try {
+            const response = await axios.post(`${this.BASE_URL}/auth/register`, registration);
+            return response.data;
+        } catch (error) {
+            console.error('Error registering user:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  login a registered user */
+    /* Login a registered user */
     static async loginUser(loginDetails) {
-        const response = await axios.post(`${this.BASE_URL}/auth/login`, loginDetails)
-        return response.data
+        try {
+            const response = await axios.post(`${this.BASE_URL}/auth/login`, loginDetails);
+            localStorage.setItem('token', response.data.token); // Save token
+            localStorage.setItem('role', response.data.role); // Save role
+            return response.data;
+        } catch (error) {
+            console.error('Error logging in:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /***USERS */
+    /** USERS */
 
-
-    /*  This is  to get the user profile */
+    /* Get all users */
     static async getAllUsers() {
-        const response = await axios.get(`${this.BASE_URL}/users/all`, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.get(`${this.BASE_URL}/users/all`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching users:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
+    /* Get user profile */
     static async getUserProfile() {
-        const response = await axios.get(`${this.BASE_URL}/users/get-logged-in-profile-info`, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.get(`${this.BASE_URL}/users/get-logged-in-profile-info`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user profile:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-
-    /* This is the  to get a single user */
+    /* Get a single user by ID */
     static async getUser(userId) {
-        const response = await axios.get(`${this.BASE_URL}/users/get-by-id/${userId}`, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.get(`${this.BASE_URL}/users/get-by-id/${userId}`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This is the  to get user bookings by the user id */
+    /* Get user bookings by user ID */
     static async getUserBookings(userId) {
-        const response = await axios.get(`${this.BASE_URL}/users/get-user-bookings/${userId}`, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.get(`${this.BASE_URL}/users/get-user-bookings/${userId}`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching user bookings:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-
-    /* This is to delete a user */
+    /* Delete a user by ID */
     static async deleteUser(userId) {
-        const response = await axios.delete(`${this.BASE_URL}/users/delete/${userId}`, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.delete(`${this.BASE_URL}/users/delete/${userId}`, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting user:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /**ROOM */
-    /* This  adds a new room room to the database */
+    /** ROOM */
+
+    /* Add a new room */
     static async addRoom(formData) {
-        const result = await axios.post(`${this.BASE_URL}/rooms/add`, formData, {
-            headers: {
-                ...this.getHeader(),
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        return result.data;
+        try {
+            const token = localStorage.getItem('token');
+            console.log('Token:', token); // Debugging: Log the token
+            const result = await axios.post(`${this.BASE_URL}/rooms/add`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return result.data;
+        } catch (error) {
+            console.error('Error adding room:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  gets all availavle rooms */
+    /* Get all available rooms */
     static async getAllAvailableRooms() {
-        const result = await axios.get(`${this.BASE_URL}/rooms/all-available-rooms`)
-        return result.data
+        try {
+            const result = await axios.get(`${this.BASE_URL}/rooms/all-available-rooms`);
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching available rooms:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-
-    /* This  gets all availavle by dates rooms from the database with a given date and a room type */
+    /* Get available rooms by date and type */
     static async getAvailableRoomsByDateAndType(checkInDate, checkOutDate, roomType) {
-        const result = await axios.get(
-            `${this.BASE_URL}/rooms/available-rooms-by-date-and-type?checkInDate=${checkInDate}
-		&checkOutDate=${checkOutDate}&roomType=${roomType}`
-        )
-        return result.data
+        try {
+            const result = await axios.get(
+                `${this.BASE_URL}/rooms/available-rooms-by-date-and-type?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomType=${roomType}`
+            );
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching available rooms:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  gets all room types from thee database */
+    /* Get all room types */
     static async getRoomTypes() {
-        const response = await axios.get(`${this.BASE_URL}/rooms/types`)
-        return response.data
+        try {
+            const response = await axios.get(`${this.BASE_URL}/rooms/types`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching room types:', error.response?.data || error.message);
+            throw error;
+        }
     }
-    /* This  gets all rooms from the database */
+
+    /* Get all rooms */
     static async getAllRooms() {
-        const result = await axios.get(`${this.BASE_URL}/rooms/all`)
-        return result.data
+        try {
+            const result = await axios.get(`${this.BASE_URL}/rooms/all`);
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching rooms:', error.response?.data || error.message);
+            throw error;
+        }
     }
-    /* This funcction gets a room by the id */
+
+    /* Get a room by ID */
     static async getRoomById(roomId) {
-        const result = await axios.get(`${this.BASE_URL}/rooms/room-by-id/${roomId}`)
-        return result.data
+        try {
+            const result = await axios.get(`${this.BASE_URL}/rooms/room-by-id/${roomId}`);
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching room:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  deletes a room by the Id */
+    /* Delete a room by ID */
     static async deleteRoom(roomId) {
-        const result = await axios.delete(`${this.BASE_URL}/rooms/delete/${roomId}`, {
-            headers: this.getHeader()
-        })
-        return result.data
+        try {
+            const result = await axios.delete(`${this.BASE_URL}/rooms/delete/${roomId}`, {
+                headers: this.getHeader()
+            });
+            return result.data;
+        } catch (error) {
+            console.error('Error deleting room:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This updates a room */
+    /* Update a room */
     static async updateRoom(roomId, formData) {
-        const result = await axios.put(`${this.BASE_URL}/rooms/update/${roomId}`, formData, {
-            headers: {
-                ...this.getHeader(),
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        return result.data;
+        try {
+            const result = await axios.put(`${this.BASE_URL}/rooms/update/${roomId}`, formData, {
+                headers: {
+                    ...this.getHeader(),
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+            return result.data;
+        } catch (error) {
+            console.error('Error updating room:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
+    /** BOOKING */
 
-    /**BOOKING */
-    /* This  saves a new booking to the databse */
+    /* Book a room */
     static async bookRoom(roomId, userId, booking) {
-
-        console.log("USER ID IS: " + userId)
-
-        const response = await axios.post(`${this.BASE_URL}/bookings/book-room/${roomId}/${userId}`, booking, {
-            headers: this.getHeader()
-        })
-        return response.data
+        try {
+            const response = await axios.post(`${this.BASE_URL}/bookings/book-room/${roomId}/${userId}`, booking, {
+                headers: this.getHeader()
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error booking room:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  gets alll bokings from the database */
+    /* Get all bookings */
     static async getAllBookings() {
-        const result = await axios.get(`${this.BASE_URL}/bookings/all`, {
-            headers: this.getHeader()
-        })
-        return result.data
+        try {
+            const result = await axios.get(`${this.BASE_URL}/bookings/all`, {
+                headers: this.getHeader()
+            });
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching bookings:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This  get booking by the cnfirmation code */
+    /* Get booking by confirmation code */
     static async getBookingByConfirmationCode(bookingCode) {
-        const result = await axios.get(`${this.BASE_URL}/bookings/get-by-confirmation-code/${bookingCode}`)
-        return result.data
+        try {
+            const result = await axios.get(`${this.BASE_URL}/bookings/get-by-confirmation-code/${bookingCode}`);
+            return result.data;
+        } catch (error) {
+            console.error('Error fetching booking:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
-    /* This is the  to cancel user booking */
+    /* Cancel a booking */
     static async cancelBooking(bookingId) {
-        const result = await axios.delete(`${this.BASE_URL}/bookings/cancel/${bookingId}`, {
-            headers: this.getHeader()
-        })
-        return result.data
+        try {
+            const result = await axios.delete(`${this.BASE_URL}/bookings/cancel/${bookingId}`, {
+                headers: this.getHeader()
+            });
+            return result.data;
+        } catch (error) {
+            console.error('Error canceling booking:', error.response?.data || error.message);
+            throw error;
+        }
     }
 
+    /** AUTHENTICATION CHECKER */
 
-    /**AUTHENTICATION CHECKER */
     static logout() {
-        localStorage.removeItem('token')
-        localStorage.removeItem('role')
+        localStorage.removeItem('token');
+        localStorage.removeItem('role');
     }
 
     static isAuthenticated() {
-        const token = localStorage.getItem('token')
-        return !!token
+        const token = localStorage.getItem('token');
+        return !!token;
     }
 
     static isAdmin() {
-        const role = localStorage.getItem('role')
-        return role === 'ADMIN'
+        const role = localStorage.getItem('role');
+        return role === 'ADMIN';
     }
 
     static isUser() {
-        const role = localStorage.getItem('role')
-        return role === 'USER'
+        const role = localStorage.getItem('role');
+        return role === 'USER';
     }
 }
-// export default new ApiService();
