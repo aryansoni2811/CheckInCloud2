@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import RoomResult from "../common/RoomResult";
 import RoomSearch from "../common/RoomSearch";
-
+import defaultimage from '../assets/hotel.png'
 
 
 
@@ -19,12 +19,12 @@ const HomePage = () => {
             {/* HEADER / BANNER ROOM SECTION */}
             <section>
                 <header className="header-banner">
-                    <img src="https://files.selar.co/product-images/2024/products/tidaconsulting/hotel-financial-model-selar.co-6644d050ec39f.jpeg" alt="CheckInCloud" className="header-image" />
+                    <img src={defaultimage} alt="CheckInCloud" className="header-image" />
                     <div className="overlay"></div>
-                    <div className="animated-texts overlay-content">
+                    <div className="overlay-content">
                         <h1>
                             Welcome to <span className="phegon-color">CheckInCloud</span>
-                        </h1><br />
+                        </h1>
                         <h3>Step into a Heaven of comfort and care</h3>
                     </div>
                 </header>

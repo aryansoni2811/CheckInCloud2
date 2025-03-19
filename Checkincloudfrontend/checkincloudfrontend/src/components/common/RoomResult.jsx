@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import ApiService from '../../service/ApiService';
+import defualtimage from '../assets/hotel.png'
 
 const RoomResult = ({ roomSearchResults }) => {
     const navigate = useNavigate(); // Initialize useNavigate hook
@@ -11,7 +12,7 @@ const RoomResult = ({ roomSearchResults }) => {
                 <div className="room-list">
                     {roomSearchResults.map(room => (
                         <div key={room.id} className="room-list-item">
-                            <img className='room-list-item-image' src={room.roomPhotoUrl} alt={room.roomType} />
+                            <img className='room-list-item-image' src={defualtimage} alt={room.roomType} />
                             <div className="room-details">
                                 <h3>{room.roomType}</h3>
                                 <p>Price: ${room.roomPrice} / night</p>

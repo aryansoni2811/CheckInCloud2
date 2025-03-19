@@ -68,7 +68,7 @@ function App() {
         </div>
 
 
-        <FooterComponent />
+        
       </div>
     </BrowserRouter>
   );

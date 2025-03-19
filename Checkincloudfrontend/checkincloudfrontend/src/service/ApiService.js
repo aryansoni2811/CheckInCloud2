@@ -1,7 +1,9 @@
-import axios from "axios";
+import axios from "axios"
+import jwtDecode from "jwt-decode"; // Note: You'll need to install this package
 
 export default class ApiService {
-    static BASE_URL = "http://localhost:8081";
+
+    static BASE_URL = "http://localhost:8081"
 
     static getHeader() {
         const token = localStorage.getItem("token");
@@ -11,276 +13,315 @@ export default class ApiService {
         };
     }
 
-    /** AUTH */
+    /**
+     * Verifies if the token is valid and not expired
+     * @returns {boolean} True if token is valid, false otherwise
+     */
+    static isTokenValid() {
+        const token = localStorage.getItem("token");
+        if (!token) return false;
+        
+        try {
+            // Simple token expiration check
+            // For JWT tokens, the payload contains an 'exp' timestamp
+            const tokenParts = token.split('.');
+            if (tokenParts.length !== 3) return false;
+            
+            // Decode the payload
+            const payload = JSON.parse(atob(tokenParts[1]));
+            // Check if token is expired
+            const currentTime = Math.floor(Date.now() / 1000);
+            
+            return payload.exp > currentTime;
+        } catch (e) {
+            console.error("Error validating token:", e);
+            return false;
+        }
+    }
+    
+    /**
+     * Verifies if the user is authenticated as an admin
+     * @returns {Promise} Promise that resolves if user is admin, rejects otherwise
+     */
+    static async verifyAdminAuth() {
+        if (!this.isTokenValid()) {
+            // Token is invalid or expired
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
+        }
+        
+        // Check if user is admin
+        if (!this.isAdmin()) {
+            throw new Error("You don't have admin privileges.");
+        }
+        
+        // If we reach here, the user is authenticated as admin
+        return true;
+    }
 
-    /* Register a new user */
+    /**AUTH */
+
+    /* This  register a new user */
     static async registerUser(registration) {
-        try {
-            const response = await axios.post(`${this.BASE_URL}/auth/register`, registration);
-            return response.data;
-        } catch (error) {
-            console.error('Error registering user:', error.response?.data || error.message);
-            throw error;
-        }
+        const response = await axios.post(`${this.BASE_URL}/auth/register`, registration)
+        return response.data
     }
 
-    /* Login a registered user */
+    /* This  login a registered user */
     static async loginUser(loginDetails) {
-        try {
-            const response = await axios.post(`${this.BASE_URL}/auth/login`, loginDetails);
-            localStorage.setItem('token', response.data.token); // Save token
-            localStorage.setItem('role', response.data.role); // Save role
-            return response.data;
-        } catch (error) {
-            console.error('Error logging in:', error.response?.data || error.message);
-            throw error;
-        }
+        const response = await axios.post(`${this.BASE_URL}/auth/login`, loginDetails)
+        return response.data
     }
 
-    /** USERS */
+    /***USERS */
 
-    /* Get all users */
+    /*  This is  to get the user profile */
     static async getAllUsers() {
-        try {
-            const response = await axios.get(`${this.BASE_URL}/users/all`, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching users:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const response = await axios.get(`${this.BASE_URL}/users/all`, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /* Get user profile */
     static async getUserProfile() {
-        try {
-            const response = await axios.get(`${this.BASE_URL}/users/get-logged-in-profile-info`, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching user profile:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const response = await axios.get(`${this.BASE_URL}/users/get-logged-in-profile-info`, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /* Get a single user by ID */
+
+    /* This is the  to get a single user */
     static async getUser(userId) {
-        try {
-            const response = await axios.get(`${this.BASE_URL}/users/get-by-id/${userId}`, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching user:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const response = await axios.get(`${this.BASE_URL}/users/get-by-id/${userId}`, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /* Get user bookings by user ID */
+    /* This is the  to get user bookings by the user id */
     static async getUserBookings(userId) {
-        try {
-            const response = await axios.get(`${this.BASE_URL}/users/get-user-bookings/${userId}`, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching user bookings:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const response = await axios.get(`${this.BASE_URL}/users/get-user-bookings/${userId}`, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /* Delete a user by ID */
+
+    /* This is to delete a user */
     static async deleteUser(userId) {
-        try {
-            const response = await axios.delete(`${this.BASE_URL}/users/delete/${userId}`, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error deleting user:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const response = await axios.delete(`${this.BASE_URL}/users/delete/${userId}`, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /** ROOM */
-
-    /* Add a new room */
+    /**ROOM */
+    /* This  adds a new room room to the database */
     static async addRoom(formData) {
-        try {
-            const token = localStorage.getItem('token');
-            console.log('Token:', token); // Debugging: Log the token
-            const result = await axios.post(`${this.BASE_URL}/rooms/add`, formData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            return result.data;
-        } catch (error) {
-            console.error('Error adding room:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const token = localStorage.getItem("token");
+        
+        // Create headers specifically for multipart/form-data
+        const headers = {
+            'Authorization': `Bearer ${token}`
+            // Don't set Content-Type - axios will set it automatically with boundary
+        };
+        
+        const result = await axios.post(`${this.BASE_URL}/rooms/add`, formData, {
+            headers: headers
+        });
+        return result.data;
     }
 
-    /* Get all available rooms */
+    /* This  gets all availavle rooms */
     static async getAllAvailableRooms() {
-        try {
-            const result = await axios.get(`${this.BASE_URL}/rooms/all-available-rooms`);
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching available rooms:', error.response?.data || error.message);
-            throw error;
-        }
+        const result = await axios.get(`${this.BASE_URL}/rooms/all-available-rooms`)
+        return result.data
     }
 
-    /* Get available rooms by date and type */
+
+    /* This  gets all availavle by dates rooms from the database with a given date and a room type */
     static async getAvailableRoomsByDateAndType(checkInDate, checkOutDate, roomType) {
-        try {
-            const result = await axios.get(
-                `${this.BASE_URL}/rooms/available-rooms-by-date-and-type?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomType=${roomType}`
-            );
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching available rooms:', error.response?.data || error.message);
-            throw error;
-        }
+        const result = await axios.get(
+            `${this.BASE_URL}/rooms/available-rooms-by-date-and-type?checkInDate=${checkInDate}&checkOutDate=${checkOutDate}&roomType=${roomType}`
+        )
+        return result.data
     }
 
-    /* Get all room types */
+    /* This  gets all room types from thee database */
     static async getRoomTypes() {
-        try {
-            const response = await axios.get(`${this.BASE_URL}/rooms/types`);
-            return response.data;
-        } catch (error) {
-            console.error('Error fetching room types:', error.response?.data || error.message);
-            throw error;
-        }
+        const response = await axios.get(`${this.BASE_URL}/rooms/types`)
+        return response.data
     }
-
-    /* Get all rooms */
+    /* This  gets all rooms from the database */
     static async getAllRooms() {
-        try {
-            const result = await axios.get(`${this.BASE_URL}/rooms/all`);
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching rooms:', error.response?.data || error.message);
-            throw error;
-        }
-    }
 
-    /* Get a room by ID */
+        const result = await axios.get(`${this.BASE_URL}/rooms/all`)
+        console.log(result)
+        return result.data
+    }
+    /* This funcction gets a room by the id */
     static async getRoomById(roomId) {
-        try {
-            const result = await axios.get(`${this.BASE_URL}/rooms/room-by-id/${roomId}`);
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching room:', error.response?.data || error.message);
-            throw error;
-        }
+        const result = await axios.get(`${this.BASE_URL}/rooms/room-by-id/${roomId}`)
+        return result.data
     }
 
-    /* Delete a room by ID */
+    /* This  deletes a room by the Id */
     static async deleteRoom(roomId) {
-        try {
-            const result = await axios.delete(`${this.BASE_URL}/rooms/delete/${roomId}`, {
-                headers: this.getHeader()
-            });
-            return result.data;
-        } catch (error) {
-            console.error('Error deleting room:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const result = await axios.delete(`${this.BASE_URL}/rooms/delete/${roomId}`, {
+            headers: this.getHeader()
+        })
+        return result.data
     }
 
-    /* Update a room */
+    /* This updates a room */
     static async updateRoom(roomId, formData) {
-        try {
-            const result = await axios.put(`${this.BASE_URL}/rooms/update/${roomId}`, formData, {
-                headers: {
-                    ...this.getHeader(),
-                    'Content-Type': 'multipart/form-data'
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
+        }
+        
+        // Handle FormData similar to addRoom method
+        let data = formData;
+        if (!(formData instanceof FormData)) {
+            data = new FormData();
+            for (const key in formData) {
+                if (key === 'photo' && formData[key] && typeof formData[key] === 'string' && formData[key].startsWith('data:image')) {
+                    const base64Response = await fetch(formData[key]);
+                    const blob = await base64Response.blob();
+                    data.append('photo', blob, 'room-image.jpg');
+                } else {
+                    data.append(key, formData[key]);
                 }
-            });
-            return result.data;
-        } catch (error) {
-            console.error('Error updating room:', error.response?.data || error.message);
-            throw error;
+            }
         }
+        
+        const result = await axios.put(`${this.BASE_URL}/rooms/update/${roomId}`, data, {
+            headers: {
+                ...this.getHeader(),
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return result.data;
     }
 
-    /** BOOKING */
 
-    /* Book a room */
+    /**BOOKING */
+    /* This  saves a new booking to the databse */
     static async bookRoom(roomId, userId, booking) {
-        try {
-            const response = await axios.post(`${this.BASE_URL}/bookings/book-room/${roomId}/${userId}`, booking, {
-                headers: this.getHeader()
-            });
-            return response.data;
-        } catch (error) {
-            console.error('Error booking room:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+
+        console.log("USER ID IS: " + userId)
+
+        const response = await axios.post(`${this.BASE_URL}/bookings/book-room/${roomId}/${userId}`, booking, {
+            headers: this.getHeader()
+        })
+        return response.data
     }
 
-    /* Get all bookings */
+    /* This  gets alll bokings from the database */
     static async getAllBookings() {
-        try {
-            const result = await axios.get(`${this.BASE_URL}/bookings/all`, {
-                headers: this.getHeader()
-            });
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching bookings:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const result = await axios.get(`${this.BASE_URL}/bookings/all`, {
+            headers: this.getHeader()
+        })
+        return result.data
     }
 
-    /* Get booking by confirmation code */
+    /* This  get booking by the cnfirmation code */
     static async getBookingByConfirmationCode(bookingCode) {
-        try {
-            const result = await axios.get(`${this.BASE_URL}/bookings/get-by-confirmation-code/${bookingCode}`);
-            return result.data;
-        } catch (error) {
-            console.error('Error fetching booking:', error.response?.data || error.message);
-            throw error;
-        }
+        const result = await axios.get(`${this.BASE_URL}/bookings/get-by-confirmation-code/${bookingCode}`)
+        return result.data
     }
 
-    /* Cancel a booking */
+    /* This is the  to cancel user booking */
     static async cancelBooking(bookingId) {
-        try {
-            const result = await axios.delete(`${this.BASE_URL}/bookings/cancel/${bookingId}`, {
-                headers: this.getHeader()
-            });
-            return result.data;
-        } catch (error) {
-            console.error('Error canceling booking:', error.response?.data || error.message);
-            throw error;
+        // Check token validity before making request
+        if (!this.isTokenValid()) {
+            this.logout();
+            throw new Error("Authentication token expired. Please login again.");
         }
+        
+        const result = await axios.delete(`${this.BASE_URL}/bookings/cancel/${bookingId}`, {
+            headers: this.getHeader()
+        })
+        return result.data
     }
 
-    /** AUTHENTICATION CHECKER */
 
+    /**AUTHENTICATION CHECKER */
     static logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('role');
+        localStorage.removeItem('email');
+        localStorage.removeItem('userId');
+        // Clear any other auth-related items you might have stored
     }
 
     static isAuthenticated() {
-        const token = localStorage.getItem('token');
-        return !!token;
+        return this.isTokenValid();
     }
 
     static isAdmin() {
-        const role = localStorage.getItem('role');
-        return role === 'ADMIN';
+        const role = localStorage.getItem('role')
+        return role === 'ADMIN'
     }
 
     static isUser() {
-        const role = localStorage.getItem('role');
-        return role === 'USER';
+        const role = localStorage.getItem('role')
+        return role === 'USER'
     }
 }
+// export default new ApiService();
